@@ -1,0 +1,44 @@
+﻿# Quartus generated files
+db/
+incremental_db/
+output_files/
+simulation/
+hps_isw_handoff/
+*.rpt
+*.summary
+*.smsg
+*.done
+*.jdi
+*.pin
+*.qws
+*.bak
+*.orig
+*.log
+*.sof
+*.pof
+*.rbf
+*.jam
+*.jbc
+*.esf
+*.jic
+*.map
+*.htm
+*.eqn
+*.tan.summary
+*.qdf
+*.dpf
+*.mif
+*.cmp
+
+# Lock/temp files (the ones causing your error)
+*.flock
+*.rdr.flock
+*.lck
+*.lock
+*.tmp
+
+# Quartus IP files
+*.qip
+*.sip
+*.sopcinfo
+*.cdf
