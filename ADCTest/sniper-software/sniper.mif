@@ -1,0 +1,103 @@
+WIDTH=16;
+DEPTH=2048;
+
+ADDRESS_RADIX=HEX;
+DATA_RADIX=HEX;
+
+CONTENT BEGIN
+0000: 1800; --         LOADI   0               ; score = 0
+0001: 1102; --         STORE   SCORE
+0002: 1807; --         LOADI   7               ; target starts at LED index 7
+0003: 1105; --         STORE   TARGET_IDX
+0004: 8043; --         CALL    MAKE_TARGET     ; build initial target pattern
+0005: 90C0; --         IN      192            ; AC = raw ADC value (0-4095)
+0006: 1104; --         STORE   SCRATCH
+0007: 2907; --         SUB     ADC_MIN         ; AC = AC - 552
+0008: 600B; --         JNEG    CLAMP           ; if negative, clamp to 0
+0009: 1104; --         STORE   SCRATCH
+000A: 580D; --         JUMP    SCALE
+000B: 1800; --         LOADI   0
+000C: 1104; --         STORE   SCRATCH
+000D: 1800; --         LOADI   0
+000E: 1103; --         STORE   IDX             ; IDX = 0 (LED index counter)
+000F: 0904; --         LOAD    SCRATCH
+0010: 2908; --         SUB     BUCKET          ; subtract one bucket size (354)
+0011: 601C; --         JNEG    SCALE_DONE      ; went negative, found the bucket
+0012: 1104; --         STORE   SCRATCH         ; save updated value
+0013: 0903; --         LOAD    IDX
+0014: 3001; --         ADDI    1               ; increment LED index
+0015: 1103; --         STORE   IDX
+0016: 2909; --         SUB     NINE            ; check if IDX >= 9
+0017: 681A; --         JPOS    CLAMP_MAX       ; clamp at 9
+0018: 701A; --         JZERO   CLAMP_MAX
+0019: 580F; --         JUMP    SCALE_LOOP
+001A: 1809; --         LOADI   9
+001B: 1103; --         STORE   IDX
+001C: 8035; --         CALL    MAKE_WEAPON     ; build weapon one-hot pattern
+001D: 0900; --         LOAD    WEAPON_PAT
+001E: 4101; --         OR      TARGET_PAT      ; AC = weapon OR target
+001F: 9801; --         OUT     1            ; display both LEDs
+0020: 9050; --         IN      80            ; AC = switch input
+0021: 390B; --         AND     BUTTON_MASK     ; isolate bit 0
+0022: 7005; --         JZERO   GAME_LOOP       ; not pressed, keep looping
+0023: 0900; --         LOAD    WEAPON_PAT
+0024: 3901; --         AND     TARGET_PAT      ; AC = weapon AND target
+0025: 7034; --         JZERO   MISS            ; zero = miss
+0026: 0902; --         LOAD    SCORE
+0027: 3001; --         ADDI    1               ; score++
+0028: 1102; --         STORE   SCORE
+0029: 9804; --         OUT     4            ; display score on HEX
+002A: 0905; --         LOAD    TARGET_IDX
+002B: 3003; --         ADDI    3
+002C: 1105; --         STORE   TARGET_IDX
+002D: 0905; --         LOAD    TARGET_IDX
+002E: 290A; --         SUB     TEN
+002F: 6032; --         JNEG    MOD_DONE
+0030: 1105; --         STORE   TARGET_IDX
+0031: 582D; --         JUMP    MOD_LOOP
+0032: 8043; --         CALL    MAKE_TARGET
+0033: 5805; --         JUMP    GAME_LOOP
+0034: 5805; --         JUMP    GAME_LOOP
+0035: 1801; --         LOADI   1               ; start with bit 0 set
+0036: 1100; --         STORE   WEAPON_PAT
+0037: 0903; --         LOAD    IDX
+0038: 1106; --         STORE   SHIFT_CNT
+0039: 0906; --         LOAD    SHIFT_CNT
+003A: 7042; --         JZERO   WEAPON_DONE     ; counter = 0, done
+003B: 0900; --         LOAD    WEAPON_PAT
+003C: 5001; --         SHIFT   1               ; shift left by 1
+003D: 1100; --         STORE   WEAPON_PAT
+003E: 0906; --         LOAD    SHIFT_CNT
+003F: 37FF; --         ADDI    -1
+0040: 1106; --         STORE   SHIFT_CNT
+0041: 5839; --         JUMP    WEAPON_SHIFT
+0042: 8800; --         RETURN
+0043: 1801; --         LOADI   1               ; start with bit 0 set
+0044: 1101; --         STORE   TARGET_PAT
+0045: 0905; --         LOAD    TARGET_IDX
+0046: 1106; --         STORE   SHIFT_CNT
+0047: 0906; --         LOAD    SHIFT_CNT
+0048: 7050; --         JZERO   TARGET_DONE     ; counter = 0, done
+0049: 0901; --         LOAD    TARGET_PAT
+004A: 5001; --         SHIFT   1               ; shift left by 1
+004B: 1101; --         STORE   TARGET_PAT
+004C: 0906; --         LOAD    SHIFT_CNT
+004D: 37FF; --         ADDI    -1
+004E: 1106; --         STORE   SHIFT_CNT
+004F: 5847; --         JUMP    TARGET_SHIFT
+0050: 8800; --         RETURN
+[0051..00FF] : 0000; -- [empty memory]
+0100: 0000; -- WEAPON_PAT: DW  0
+0101: 0000; -- TARGET_PAT: DW  0
+0102: 0000; -- SCORE:      DW  0
+0103: 0000; -- IDX:        DW  0
+0104: 0000; -- SCRATCH:    DW  0
+0105: 0007; -- TARGET_IDX: DW  7
+0106: 0000; -- SHIFT_CNT:  DW  0
+0107: 0228; -- ADC_MIN:    DW  552
+0108: 0162; -- BUCKET:     DW  354
+0109: 0009; -- NINE:       DW  9
+010A: 000A; -- TEN:        DW  10
+010B: 0001; -- BUTTON_MASK: DW  1
+[010C..07FF] : 0000; -- [empty memory]
+END;
