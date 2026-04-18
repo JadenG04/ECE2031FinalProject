@@ -1,0 +1,37 @@
+# Quartus generated output files
+output_files/
+db/
+incremental_db/
+simulation/
+*.qws
+*.rpt
+*.smsg
+*.summary
+*.pin
+*.sof
+*.pof
+*.rbf
+*.jic
+*.ekp
+*.jam
+*.jbc
+*.asm.rpt
+*.map.rpt
+*.fit.rpt
+*.sta.rpt
+*.cdf
+*.qsf.bak
+*.bak
+
+# Compiled simulation files
+*.vcd
+*.wlf
+
+# IP generated files (keep .qip but ignore generated HDL)
+*_bb.v
+*_inst.v
+*_inst.vhd
+
+# Temporary files
+*.tmp
+*.temp
