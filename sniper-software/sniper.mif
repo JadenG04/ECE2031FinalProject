@@ -6,102 +6,102 @@ DATA_RADIX=HEX;
 
 CONTENT BEGIN
 0000: 1800; --         LOADI   0
-0001: 1102; --         STORE   SCORE
+0001: 1102; --         STORE   SCORE           ; score starts at 0
 0002: 1807; --         LOADI   7
-0003: 1105; --         STORE   TARGET_IDX
-0004: 8047; --         CALL    MAKE_TARGET
+0003: 1105; --         STORE   TARGET_IDX      ; target starts at LED position 7
+0004: 8047; --         CALL    MAKE_TARGET     ; convert index 7 to one-hot pattern
 0005: 90C0; --         IN      192
 0006: 1104; --         STORE   SCRATCH
 0007: 2907; --         SUB     ADC_MIN
-0008: 600B; --         JNEG    CLAMP_ZERO
+0008: 600B; --         JNEG    CLAMP_ZERO      ; if result went negative, clamp to 0
 0009: 1104; --         STORE   SCRATCH
 000A: 580D; --         JUMP    SCALE
 000B: 1800; --         LOADI   0
-000C: 1104; --         STORE   SCRATCH
+000C: 1104; --         STORE   SCRATCH         ; floor the value at 0
 000D: 1800; --         LOADI   0
-000E: 1103; --         STORE   IDX
+000E: 1103; --         STORE   IDX             ; start LED index counter at 0
 000F: 0904; --         LOAD    SCRATCH
-0010: 2908; --         SUB     BUCKET
-0011: 601C; --         JNEG    SCALE_DONE
-0012: 1104; --         STORE   SCRATCH
+0010: 2908; --         SUB     BUCKET          ; subtract one bucket worth (354)
+0011: 601C; --         JNEG    SCALE_DONE      ; if negative, we found the right bucket
+0012: 1104; --         STORE   SCRATCH         ; save the remainder
 0013: 0903; --         LOAD    IDX
-0014: 3001; --         ADDI    1
+0014: 3001; --         ADDI    1               ; move to next LED position
 0015: 1103; --         STORE   IDX
-0016: 2909; --         SUB     NINE
+0016: 2909; --         SUB     NINE            ; make sure we don't go past LED 9
 0017: 681A; --         JPOS    CLAMP_MAX
-0018: 701A; --         JZERO   CLAMP_MAX
+0018: 701A; --         JZERO   CLAMP_MAX       ; catch exactly 9 too
 0019: 580F; --         JUMP    SCALE_LOOP
 001A: 1809; --         LOADI   9
-001B: 1103; --         STORE   IDX
-001C: 8039; --         CALL    MAKE_WEAPON
+001B: 1103; --         STORE   IDX             ; cap at LED 9 (rightmost)
+001C: 8039; --         CALL    MAKE_WEAPON     ; convert index to one-hot bit pattern
 001D: 0900; --         LOAD    WEAPON_PAT
-001E: 4101; --         OR      TARGET_PAT
-001F: 9801; --         OUT     1
-0020: 9000; --         IN      0               ; read switches from port 0
-0021: 390B; --         AND     BUTTON_MASK     ; isolate bit 0 (switch 0)
-0022: 7005; --         JZERO   GAME_LOOP       ; not pressed, keep looping
+001E: 4101; --         OR      TARGET_PAT      ; combine weapon and target into one value
+001F: 9801; --         OUT     1               ; send to LED port
+0020: 9000; --         IN      0               ; read all switches
+0021: 390B; --         AND     BUTTON_MASK     ; isolate just bit 0 (switch 0)
+0022: 7005; --         JZERO   GAME_LOOP       ; switch is off, keep looping
 0023: 0900; --         LOAD    WEAPON_PAT
-0024: 3901; --         AND     TARGET_PAT
-0025: 7038; --         JZERO   MISS            ; miss
+0024: 3901; --         AND     TARGET_PAT      ; non-zero means same LED = hit
+0025: 7038; --         JZERO   MISS            ; zero means different LEDs = miss
 0026: 0902; --         LOAD    SCORE
-0027: 3001; --         ADDI    1
+0027: 3001; --         ADDI    1               ; add 1 to score
 0028: 1102; --         STORE   SCORE
-0029: 9804; --         OUT     4               ; show score on HEX
+0029: 9804; --         OUT     4               ; display updated score on HEX display
 002A: 0905; --         LOAD    TARGET_IDX
 002B: 3003; --         ADDI    3
 002C: 1105; --         STORE   TARGET_IDX
 002D: 0905; --         LOAD    TARGET_IDX
-002E: 290A; --         SUB     TEN
+002E: 290A; --         SUB     TEN             ; keep subtracting 10 until under 10
 002F: 6032; --         JNEG    MOD_DONE
 0030: 1105; --         STORE   TARGET_IDX
 0031: 582D; --         JUMP    MOD_LOOP
-0032: 8047; --         CALL    MAKE_TARGET
+0032: 8047; --         CALL    MAKE_TARGET     ; rebuild target pattern at new position
 0033: 9000; --         IN      0
 0034: 390B; --         AND     BUTTON_MASK
-0035: 6033; --         JNEG    WAIT_RELEASE
-0036: 6833; --         JPOS    WAIT_RELEASE
-0037: 5805; --         JUMP    GAME_LOOP
+0035: 6033; --         JNEG    WAIT_RELEASE    ; still held, keep waiting
+0036: 6833; --         JPOS    WAIT_RELEASE    ; still held, keep waiting
+0037: 5805; --         JUMP    GAME_LOOP       ; switch released, back to game
 0038: 5805; --         JUMP    GAME_LOOP
-0039: 1801; --         LOADI   1
+0039: 1801; --         LOADI   1               ; start with bit 0 set
 003A: 1100; --         STORE   WEAPON_PAT
 003B: 0903; --         LOAD    IDX
-003C: 1106; --         STORE   SHIFT_CNT
+003C: 1106; --         STORE   SHIFT_CNT       ; shift this many times
 003D: 0906; --         LOAD    SHIFT_CNT
-003E: 7046; --         JZERO   MW_DONE
+003E: 7046; --         JZERO   MW_DONE         ; done shifting
 003F: 0900; --         LOAD    WEAPON_PAT
-0040: 5001; --         SHIFT   1
+0040: 5001; --         SHIFT   1               ; shift left by 1 position
 0041: 1100; --         STORE   WEAPON_PAT
 0042: 0906; --         LOAD    SHIFT_CNT
-0043: 37FF; --         ADDI    -1
+0043: 37FF; --         ADDI    -1              ; decrement counter
 0044: 1106; --         STORE   SHIFT_CNT
 0045: 583D; --         JUMP    MW_LOOP
 0046: 8800; --         RETURN
-0047: 1801; --         LOADI   1
+0047: 1801; --         LOADI   1               ; start with bit 0 set
 0048: 1101; --         STORE   TARGET_PAT
 0049: 0905; --         LOAD    TARGET_IDX
-004A: 1106; --         STORE   SHIFT_CNT
+004A: 1106; --         STORE   SHIFT_CNT       ; shift this many times
 004B: 0906; --         LOAD    SHIFT_CNT
-004C: 7054; --         JZERO   MT_DONE
+004C: 7054; --         JZERO   MT_DONE         ; done shifting
 004D: 0901; --         LOAD    TARGET_PAT
-004E: 5001; --         SHIFT   1
+004E: 5001; --         SHIFT   1               ; shift left by 1 position
 004F: 1101; --         STORE   TARGET_PAT
 0050: 0906; --         LOAD    SHIFT_CNT
-0051: 37FF; --         ADDI    -1
+0051: 37FF; --         ADDI    -1              ; decrement counter
 0052: 1106; --         STORE   SHIFT_CNT
 0053: 584B; --         JUMP    MT_LOOP
 0054: 8800; --         RETURN
 [0055..00FF] : 0000; -- [empty memory]
-0100: 0000; -- WEAPON_PAT:  DW  0
-0101: 0000; -- TARGET_PAT:  DW  0
-0102: 0000; -- SCORE:       DW  0
-0103: 0000; -- IDX:         DW  0
-0104: 0000; -- SCRATCH:     DW  0
-0105: 0007; -- TARGET_IDX:  DW  7
-0106: 0000; -- SHIFT_CNT:   DW  0
-0107: 0228; -- ADC_MIN:     DW  552
-0108: 0162; -- BUCKET:      DW  354
-0109: 0009; -- NINE:        DW  9
-010A: 000A; -- TEN:         DW  10
-010B: 0001; -- BUTTON_MASK: DW  1
+0100: 0000; -- WEAPON_PAT:  DW  0      ; one-hot pattern for weapon LED position
+0101: 0000; -- TARGET_PAT:  DW  0      ; one-hot pattern for target LED position
+0102: 0000; -- SCORE:       DW  0      ; current player score
+0103: 0000; -- IDX:         DW  0      ; current LED index (0-9) for weapon
+0104: 0000; -- SCRATCH:     DW  0      ; temporary variable for ADC math
+0105: 0007; -- TARGET_IDX:  DW  7      ; current target LED index (starts at 7)
+0106: 0000; -- SHIFT_CNT:   DW  0      ; counter used in shift loops
+0107: 0228; -- ADC_MIN:     DW  552    ; potentiometer floor value (0x228 observed on hardware)
+0108: 0162; -- BUCKET:      DW  354    ; (4095-552)/10 = 354 steps per LED bucket
+0109: 0009; -- NINE:        DW  9      ; used to clamp LED index at maximum of 9
+010A: 000A; -- TEN:         DW  10     ; used for modulo 10 when wrapping target position
+010B: 0001; -- BUTTON_MASK: DW  1      ; bit mask for switch 0 (fire button)
 [010C..07FF] : 0000; -- [empty memory]
 END;
